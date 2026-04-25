@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="card">
+        <h1>News</h1>
+        <p class="article-meta">{{ today }}</p>
+    </section>
+
+    <section class="card">
+        <h2>Today's Articles</h2>
+
+        {% if articles %}
+            {% for article in articles %}
+                <article class="article">
+                    <h2>
+                        <a href="{{ article.url }}"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            {{ article.title }}
+                        </a>
+                    </h2>
+
+                    <p class="article-meta">
+                        Source: {{ article.source }}
+                        |
+                        Date: {{ article.date.strftime('%B %d, %Y') }}
+                    </p>
+                    
+                </article>
+            {% endfor %}
+        {% else %}
+            <p class="empty-state">No articles found for today.</p>
+        {% endif %}
+    </section>
+{% endblock %}
