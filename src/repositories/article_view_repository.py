@@ -3,6 +3,7 @@ import json
 import sqlite3
 from typing import Iterable
 
+from helper_functions import *
 from models.article_view import ArticleView
 
 class ArticleViewRepository:

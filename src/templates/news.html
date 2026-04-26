@@ -7,64 +7,100 @@
     </section>
 
     <section class="card">
-        <h2>Today's Articles</h2>
+        <div class="section-header">
+            <h2>Articles</h2>
 
-        <!-- Filter -->
-        <div style="margin-bottom: 1rem;">
-            <label for="sourceFilter">Filter by source:</label>
-            <select id="sourceFilter" onchange="filterArticles()">
-                <option value="all">All</option>
+            {% if articles %}
+                <div class="filter-control">
+                    <label for="sourceFilter">Source</label>
 
-                {% set sources = articles | map(attribute='source') | list | unique %}
-                {% for source in sources %}
-                    <option value="{{ source }}">{{ source }}</option>
-                {% endfor %}
-            </select>
+                    <select id="sourceFilter" onchange="filterArticles()">
+                        <option value="all">All</option>
+
+                        {% set sources = articles | map(attribute='source') | unique | list %}
+                        {% for source in sources %}
+                            <option value="{{ source }}">{{ source }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
         </div>
 
         {% if articles %}
             <div id="articles">
                 {% for article in articles %}
-                    <article class="article" data-source="{{ article.source }}">
-                        <h2>
-                            <a href="{{ article.url }}"
-                            target="_blank"
-                            rel="noopener noreferrer">
-                                {{ article.title }}
-                            </a>
-                        </h2>
+                    <article class="article"
+                             data-source="{{ article.source }}"
+                             data-read="{{ article.is_read }}">
+
+                        <div class="article-header">
+                            <h2>
+                                <a href="{{ article.url }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    {{ article.title }}
+                                </a>
+                            </h2>
+
+                            {% if article.is_read %}
+                                <span class="status-badge">Read</span>
+                            {% else %}
+                                <span class="status-badge unread">Unread</span>
+                            {% endif %}
+                        </div>
 
                         <p class="article-meta">
                             Source: {{ article.source }}
                             |
-                            Date: {{ article.date.strftime('%B %d, %Y') }}
+                            Date:
+                            {% if article.published_at %}
+                                {{ article.published_at.strftime('%B %d, %Y') }}
+                            {% else %}
+                                Unknown
+                            {% endif %}
                         </p>
 
-                        <form method="post" action="/vote" class="vote-form">
-                            <input type="hidden" name="article_url" value="{{ article.url }}">
-                            <input type="hidden" name="title" value="{{ article.title }}">
-                            <input type="hidden" name="source" value="{{ article.source }}">
-                            <input type="hidden" name="article_date" value="{{ article.date.isoformat() }}">
+                        {% if article.summary %}
+                            <p>{{ article.summary }}</p>
+                        {% endif %}
 
-                            <button type="submit"
-                                    name="vote"
-                                    value="up"
-                                    class="vote-button {% if article.vote == 'up' %}selected{% endif %}">
-                                👍
-                            </button>
+                        <div class="article-actions">
+                            <form method="post" action="/vote" class="vote-form">
+                                <input type="hidden" name="article_url" value="{{ article.url }}">
 
-                            <button type="submit"
-                                    name="vote"
-                                    value="down"
-                                    class="vote-button {% if article.vote == 'down' %}selected{% endif %}">
-                                👎
-                            </button>
-                        </form>
+                                <button type="submit"
+                                        name="vote"
+                                        value="up"
+                                        class="vote-button {% if article.vote == 'up' %}selected{% endif %}">
+                                    👍
+                                </button>
+
+                                <button type="submit"
+                                        name="vote"
+                                        value="down"
+                                        class="vote-button {% if article.vote == 'down' %}selected{% endif %}">
+                                    👎
+                                </button>
+                            </form>
+
+                            <form method="post" action="/read" class="read-form">
+                                <input type="hidden" name="article_url" value="{{ article.url }}">
+                                <input type="hidden" name="is_read" value="{{ not article.is_read }}">
+
+                                <button type="submit" class="secondary-button">
+                                    {% if article.is_read %}
+                                        Mark unread
+                                    {% else %}
+                                        Mark read
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
                     </article>
                 {% endfor %}
             </div>
         {% else %}
-            <p class="empty-state">No articles found for today.</p>
+            <p class="empty-state">No articles found.</p>
         {% endif %}
     </section>
 
@@ -76,11 +112,10 @@
             articles.forEach(article => {
                 const source = article.getAttribute('data-source');
 
-                if (selected === 'all' || source === selected) {
-                    article.style.display = '';
-                } else {
-                    article.style.display = 'none';
-                }
+                article.style.display =
+                    selected === 'all' || source === selected
+                        ? ''
+                        : 'none';
             });
         }
     </script>

@@ -1,51 +1,62 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timezone
+
+from helper_functions import str_to_dt, dt_to_str
+from models.article import Article  # adjust import path
 
 
-def get_white_house_news():
-    """Queries the news on whitehouse.gov"""
+def get_white_house_news() -> list[Article]:
+    '''Queries the news on whitehouse.gov and returns Article objects'''
 
-    # Acquire today's date
-    today = date.today().strftime("%B %-d, %Y")  # e.g., April 25, 2026
-
-    # Crawl White House's news page
-    url = "https://www.whitehouse.gov/news/"
+    url = 'https://www.whitehouse.gov/news/'
     headers = {
-        "User-Agent": "andy-data-project/1.0 (contact: andrew.e.tunison@gmail.com)",
-        "Accept": "text/html,application/xhtml+xml",
+        'User-Agent': 'andy-data-project/1.0 (contact: andrew.e.tunison@gmail.com)',
+        'Accept': 'text/html,application/xhtml+xml',
     }
-    html = requests.get(url, timeout=20).text
-    soup = BeautifulSoup(html, "html.parser")
 
-    # Filter to news article titles/links
-    results = []
-    elements = soup.select("h2:has(a)")
-    for h2 in soup.select("h2:has(a)"):
-        a = h2.find("a")
+    html = requests.get(url, headers=headers, timeout=20).text
+    soup = BeautifulSoup(html, 'html.parser')
 
-        # go up to the parent container (the <div> wrapping everything)
-        container = h2.find_parent("div")
+    results: list[Article] = []
 
-        # find the <time> inside that container
-        time_tag = container.find("time")
+    for h2 in soup.select('h2:has(a)'):
+        a = h2.find('a')
+        if not a:
+            continue
 
-        # Get the date
-        article_date = (
-            datetime.fromisoformat(time_tag["datetime"]).astimezone(timezone.utc)
-            if time_tag
-            else None
-        )
-        todays_date = datetime.now(timezone.utc)
+        # safer: climb to nearest <li> (actual article container)
+        container = h2.find_parent('li')
+        if not container:
+            continue
 
-        if (article_date) and ((todays_date - article_date).days <= 7):
-            results.append(
-                {
-                    "title": a.get_text(strip=True),
-                    "url": a["href"],
-                    "date": article_date,
-                    "source": "White House",
-                }
+        time_tag = container.find('time')
+        if not time_tag:
+            continue
+
+        try:
+            article_date = datetime.fromisoformat(
+                time_tag['datetime']
+            ).astimezone(timezone.utc)
+        except Exception:
+            continue
+
+        # filter: last 7 days
+        now = datetime.now(timezone.utc)
+        if (now - article_date).days > 7:
+            continue
+
+        try:
+            article = Article(
+                title=a.get_text(strip=True),
+                url=a['href'],
+                source='White House',
+                published_at=article_date,
             )
+            results.append(article)
+
+        except Exception:
+            # skip malformed entries
+            continue
 
     return results
