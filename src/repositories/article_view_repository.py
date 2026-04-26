@@ -1,10 +1,9 @@
-from datetime import datetime, timezone
 import json
 import sqlite3
-from typing import Iterable
 
-from helper_functions import *
+from helper_functions import str_to_dt
 from models.article_view import ArticleView
+
 
 class ArticleViewRepository:
     def __init__(self, conn: sqlite3.Connection):
@@ -23,26 +22,26 @@ class ArticleViewRepository:
         params = []
 
         if source:
-            where_clauses.append('a.source = ?')
+            where_clauses.append("a.source = ?")
             params.append(source)
 
         if unread_only:
-            where_clauses.append('COALESCE(s.has_read, 0) = 0')
+            where_clauses.append("COALESCE(s.has_read, 0) = 0")
 
         if saved_only:
-            where_clauses.append('COALESCE(s.saved, 0) = 1')
+            where_clauses.append("COALESCE(s.saved, 0) = 1")
 
         if not include_archived:
-            where_clauses.append('COALESCE(s.archived, 0) = 0')
+            where_clauses.append("COALESCE(s.archived, 0) = 0")
 
-        where_sql = ''
+        where_sql = ""
         if where_clauses:
-            where_sql = 'WHERE ' + ' AND '.join(where_clauses)
+            where_sql = "WHERE " + " AND ".join(where_clauses)
 
         params.append(limit)
 
         rows = self.conn.execute(
-            f'''
+            f"""
             SELECT
                 a.url,
                 a.title,
@@ -76,7 +75,7 @@ class ArticleViewRepository:
                 a.first_seen_at DESC
 
             LIMIT ?
-            ''',
+            """,
             params,
         ).fetchall()
 
@@ -84,21 +83,21 @@ class ArticleViewRepository:
 
     def _row_to_view(self, row: sqlite3.Row) -> ArticleView:
         return ArticleView(
-            url=row['url'],
-            title=row['title'],
-            source=row['source'],
-            published_at=str_to_dt(row['published_at']),
-            summary=row['summary'],
-            read_time=row['read_time'],
-            content_type=row['content_type'],
-            image_url=row['image_url'],
-            tags=json.loads(row['tags']) if row['tags'] else [],
-            has_read=bool(row['has_read']),
-            has_opened=bool(row['has_opened']),
-            read_at=str_to_dt(row['read_at']),
-            opened_at=str_to_dt(row['opened_at']),
-            vote=row['vote'],
-            saved=bool(row['saved']),
-            archived=bool(row['archived']),
-            notes=row['notes'],
+            url=row["url"],
+            title=row["title"],
+            source=row["source"],
+            published_at=str_to_dt(row["published_at"]),
+            summary=row["summary"],
+            read_time=row["read_time"],
+            content_type=row["content_type"],
+            image_url=row["image_url"],
+            tags=json.loads(row["tags"]) if row["tags"] else [],
+            has_read=bool(row["has_read"]),
+            has_opened=bool(row["has_opened"]),
+            read_at=str_to_dt(row["read_at"]),
+            opened_at=str_to_dt(row["opened_at"]),
+            vote=row["vote"],
+            saved=bool(row["saved"]),
+            archived=bool(row["archived"]),
+            notes=row["notes"],
         )

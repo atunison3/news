@@ -4,12 +4,13 @@ from repositories.article_repository import ArticleRepository
 from repositories.article_user_state_repository import ArticleUserStateRepository
 from repositories.article_view_repository import ArticleViewRepository
 
+
 def get_connection(db_path: Path) -> sqlite3.Connection:
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
-    conn.execute('PRAGMA foreign_keys = ON')
+    conn.execute("PRAGMA foreign_keys = ON")
 
     return conn
 
@@ -24,10 +25,10 @@ class NewsService:
 
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
-        conn.execute('PRAGMA foreign_keys = ON')
+        conn.execute("PRAGMA foreign_keys = ON")
 
         return conn
-    
+
     def ingest(self, scraped_articles: list):
         with get_connection(self.db_path) as conn:
             article_repo = ArticleRepository(conn)
@@ -42,7 +43,6 @@ class NewsService:
         with get_connection(self.db_path) as conn:
             view_repo = ArticleViewRepository(conn)
             return view_repo.list_feed(limit=limit)
-        
 
     def mark_as_read(self, article_url: str) -> None:
         with get_connection(self.db_path) as conn:

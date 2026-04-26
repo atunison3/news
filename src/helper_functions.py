@@ -16,11 +16,11 @@ def dt_to_str(value: datetime | None) -> str | None:
     return value.isoformat()
 
 
-def setup_logger(name: str = 'news_app') -> logging.Logger:
-    log_dir = Path('logs')
+def setup_logger(name: str = "news_app") -> logging.Logger:
+    log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
-    log_file = log_dir / 'app.log'
+    log_file = log_dir / "app.log"
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
@@ -37,7 +37,7 @@ def setup_logger(name: str = 'news_app') -> logging.Logger:
     console_handler.setLevel(logging.INFO)
 
     formatter = logging.Formatter(
-        '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
     )
 
     file_handler.setFormatter(formatter)
@@ -50,7 +50,7 @@ def setup_logger(name: str = 'news_app') -> logging.Logger:
 
 
 def should_filter_article(article) -> bool:
-    '''Return True if the article should be filtered out.'''
+    """Return True if the article should be filtered out."""
 
     p = 1
 
@@ -59,11 +59,10 @@ def should_filter_article(article) -> bool:
 
     if article.has_read:
         p *= 0.05
-    
+
     # p=0: Returns False --> Never filters
     # p=1: Returns True --> Always filters
     # As p decreases, the likelihood random is greater increases (increasing odds of returning True)
-    # True filters it out. 
+    # True filters it out.
     # Thus, the likelihood of filtering increases
     return random.random() >= p
-

@@ -2,42 +2,41 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 
-from helper_functions import str_to_dt, dt_to_str
 from models.article import Article  # adjust import path
 
 
 def get_white_house_news() -> list[Article]:
-    '''Queries the news on whitehouse.gov and returns Article objects'''
+    """Queries the news on whitehouse.gov and returns Article objects"""
 
-    url = 'https://www.whitehouse.gov/news/'
+    url = "https://www.whitehouse.gov/news/"
     headers = {
-        'User-Agent': 'andy-data-project/1.0 (contact: andrew.e.tunison@gmail.com)',
-        'Accept': 'text/html,application/xhtml+xml',
+        "User-Agent": "andy-data-project/1.0 (contact: andrew.e.tunison@gmail.com)",
+        "Accept": "text/html,application/xhtml+xml",
     }
 
     html = requests.get(url, headers=headers, timeout=20).text
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
 
     results: list[Article] = []
 
-    for h2 in soup.select('h2:has(a)'):
-        a = h2.find('a')
+    for h2 in soup.select("h2:has(a)"):
+        a = h2.find("a")
         if not a:
             continue
 
         # safer: climb to nearest <li> (actual article container)
-        container = h2.find_parent('li')
+        container = h2.find_parent("li")
         if not container:
             continue
 
-        time_tag = container.find('time')
+        time_tag = container.find("time")
         if not time_tag:
             continue
 
         try:
-            article_date = datetime.fromisoformat(
-                time_tag['datetime']
-            ).astimezone(timezone.utc)
+            article_date = datetime.fromisoformat(time_tag["datetime"]).astimezone(
+                timezone.utc
+            )
         except Exception:
             continue
 
@@ -49,8 +48,8 @@ def get_white_house_news() -> list[Article]:
         try:
             article = Article(
                 title=a.get_text(strip=True),
-                url=a['href'],
-                source='White House',
+                url=a["href"],
+                source="White House",
                 published_at=article_date,
             )
             results.append(article)

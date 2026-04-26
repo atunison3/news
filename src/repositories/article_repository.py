@@ -1,23 +1,9 @@
-from datetime import datetime, timezone
 import json
 import sqlite3
 from typing import Iterable
 
+from helper_functions import str_to_dt, dt_to_str
 from models.article import Article
-
-
-def dt_to_str(value: datetime | None) -> str | None:
-    if value is None:
-        return None
-
-    return value.isoformat()
-
-
-def str_to_dt(value: str | None) -> datetime | None:
-    if value is None:
-        return None
-
-    return datetime.fromisoformat(value)
 
 
 class ArticleRepository:
@@ -26,7 +12,7 @@ class ArticleRepository:
 
     def upsert(self, article: Article) -> None:
         self.conn.execute(
-            '''
+            """
             INSERT INTO articles (
                 url,
                 title,
@@ -52,7 +38,7 @@ class ArticleRepository:
                 image_url = excluded.image_url,
                 tags = excluded.tags,
                 last_seen_at = CURRENT_TIMESTAMP
-            ''',
+            """,
             (
                 str(article.url),
                 article.title,
@@ -72,11 +58,11 @@ class ArticleRepository:
 
     def get_by_url(self, url: str) -> Article | None:
         row = self.conn.execute(
-            '''
+            """
             SELECT *
             FROM articles
             WHERE url = ?
-            ''',
+            """,
             (url,),
         ).fetchone()
 
@@ -84,12 +70,12 @@ class ArticleRepository:
 
     def list_all(self, limit: int = 100) -> list[Article]:
         rows = self.conn.execute(
-            '''
+            """
             SELECT *
             FROM articles
             ORDER BY published_at DESC, first_seen_at DESC
             LIMIT ?
-            ''',
+            """,
             (limit,),
         ).fetchall()
 
@@ -97,15 +83,15 @@ class ArticleRepository:
 
     def _row_to_article(self, row: sqlite3.Row) -> Article:
         return Article(
-            url=row['url'],
-            title=row['title'],
-            source=row['source'],
-            published_at=str_to_dt(row['published_at']),
-            first_seen_at=str_to_dt(row['first_seen_at']),
-            last_seen_at=str_to_dt(row['last_seen_at']),
-            summary=row['summary'],
-            read_time=row['read_time'],
-            content_type=row['content_type'],
-            image_url=row['image_url'],
-            tags=json.loads(row['tags']) if row['tags'] else [],
+            url=row["url"],
+            title=row["title"],
+            source=row["source"],
+            published_at=str_to_dt(row["published_at"]),
+            first_seen_at=str_to_dt(row["first_seen_at"]),
+            last_seen_at=str_to_dt(row["last_seen_at"]),
+            summary=row["summary"],
+            read_time=row["read_time"],
+            content_type=row["content_type"],
+            image_url=row["image_url"],
+            tags=json.loads(row["tags"]) if row["tags"] else [],
         )

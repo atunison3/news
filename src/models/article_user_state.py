@@ -9,7 +9,7 @@ class ArticleUserState(BaseModel):
     has_read: bool = False
     has_opened: bool = False
     read_at: datetime | None = None
-    vote: Literal['up', 'down'] | None = None
+    vote: Literal["up", "down"] | None = None
     saved: bool = False
     archived: bool = False
     notes: str | None = None

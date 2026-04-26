@@ -3,6 +3,7 @@ from typing import Optional, Literal
 
 from pydantic import BaseModel, HttpUrl, Field
 
+
 class ArticleView(BaseModel):
     url: HttpUrl
     title: str
@@ -18,7 +19,7 @@ class ArticleView(BaseModel):
     has_opened: bool = False
     read_at: datetime | None = None
     opened_at: datetime | None = None
-    vote: Literal['up', 'down'] | None = None
+    vote: Literal["up", "down"] | None = None
     saved: bool = False
     archived: bool = False
     notes: str | None = None

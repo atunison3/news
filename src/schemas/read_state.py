@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
+
 
 class ReadStateRequest(BaseModel):
     article_url: HttpUrl
-    is_read: bool
+    has_read: bool
