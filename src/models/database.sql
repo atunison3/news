@@ -18,8 +18,10 @@ CREATE TABLE IF NOT EXISTS articles (
 CREATE TABLE IF NOT EXISTS article_user_state (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     article_url TEXT NOT NULL UNIQUE,
-    is_read INTEGER NOT NULL DEFAULT 0 CHECK (is_read IN (0, 1)),
+    has_read INTEGER NOT NULL DEFAULT 0 CHECK (has_read IN (0, 1)),
+    has_opened INTEGER NOT NULL DEFAULT 0 CHECK (has_opened IN (0, 1)),
     read_at TEXT,
+    opened_at TEXT,
     vote TEXT CHECK (vote IN ('up', 'down')),
     saved INTEGER NOT NULL DEFAULT 0 CHECK (saved IN (0, 1)),
     archived INTEGER NOT NULL DEFAULT 0 CHECK (archived IN (0, 1)),
@@ -30,6 +32,8 @@ CREATE TABLE IF NOT EXISTS article_user_state (
     FOREIGN KEY (article_url)
         REFERENCES articles(url)
         ON DELETE CASCADE
+
+    CHECK (has_read <= has_opened)
 );
 
 CREATE INDEX IF NOT EXISTS idx_articles_source
@@ -41,8 +45,8 @@ CREATE INDEX IF NOT EXISTS idx_articles_published_at
 CREATE INDEX IF NOT EXISTS idx_articles_last_seen_at
     ON articles(last_seen_at);
 
-CREATE INDEX IF NOT EXISTS idx_article_user_state_is_read
-    ON article_user_state(is_read);
+CREATE INDEX IF NOT EXISTS idx_article_user_state_has_read
+    ON article_user_state(has_read);
 
 CREATE INDEX IF NOT EXISTS idx_article_user_state_saved
     ON article_user_state(saved);

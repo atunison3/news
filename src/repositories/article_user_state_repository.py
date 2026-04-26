@@ -1,7 +1,5 @@
 from datetime import datetime, timezone
-import json
 import sqlite3
-from typing import Iterable
 
 from models.article_user_state import ArticleUserState
 
@@ -34,24 +32,46 @@ class ArticleUserStateRepository:
             for row in rows
         }
 
-    def mark_read(self, article_url: str, is_read: bool = True) -> None:
-        read_at = datetime.now(timezone.utc).isoformat() if is_read else None
+    def mark_read(self, article_url: str) -> None:
+        read_at = datetime.now(timezone.utc).isoformat() if True else None
 
         self.conn.execute(
             '''
             INSERT INTO article_user_state (
                 article_url,
-                is_read,
+                has_read,
                 read_at
             )
             VALUES (?, ?, ?)
             ON CONFLICT(article_url)
             DO UPDATE SET
-                is_read = excluded.is_read,
+                has_read = excluded.has_read,
                 read_at = excluded.read_at,
                 updated_at = CURRENT_TIMESTAMP
             ''',
-            (article_url, int(is_read), read_at),
+            (article_url, int(True), read_at),
+        )
+
+    def mark_opened(self, article_url: str) -> None:
+        '''Updates the article to having been opened'''
+
+        opened_at = datetime.now(timezone.utc).isoformat() if True else None
+
+        self.conn.execute(
+            '''
+            INSERT INTO article_user_state (
+                article_url,
+                has_opened,
+                opened_at
+            )
+            VALUES (?, ?, ?)
+            ON CONFLICT(article_url)
+            DO UPDATE SET
+                has_opened = excluded.has_opened,
+                opened_at = excluded.opened_at,
+                updated_at = CURRENT_TIMESTAMP
+            ''',
+            (article_url, int(True), opened_at),
         )
 
     def set_vote(self, article_url: str, vote: str | None) -> None:
@@ -121,8 +141,10 @@ class ArticleUserStateRepository:
     def _row_to_state(self, row: sqlite3.Row) -> ArticleUserState:
         return ArticleUserState(
             article_url=row['article_url'],
-            is_read=bool(row['is_read']),
+            has_read=bool(row['has_read']),
+            has_opened=bool(row['has_opened']),
             read_at=str_to_dt(row['read_at']),
+            opened_at=str_to_dt(row['opened_at']),
             vote=row['vote'],
             saved=bool(row['saved']),
             archived=bool(row['archived']),

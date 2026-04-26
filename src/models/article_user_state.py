@@ -6,7 +6,8 @@ from pydantic import BaseModel, HttpUrl, Field
 
 class ArticleUserState(BaseModel):
     article_url: HttpUrl
-    is_read: bool = False
+    has_read: bool = False
+    has_opened: bool = False
     read_at: datetime | None = None
     vote: Literal['up', 'down'] | None = None
     saved: bool = False

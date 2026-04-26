@@ -14,8 +14,10 @@ class ArticleView(BaseModel):
     image_url: HttpUrl | None = None
     tags: list[str] = Field(default_factory=list)
 
-    is_read: bool = False
+    has_read: bool = False
+    has_opened: bool = False
     read_at: datetime | None = None
+    opened_at: datetime | None = None
     vote: Literal['up', 'down'] | None = None
     saved: bool = False
     archived: bool = False

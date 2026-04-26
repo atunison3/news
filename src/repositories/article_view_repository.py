@@ -27,7 +27,7 @@ class ArticleViewRepository:
             params.append(source)
 
         if unread_only:
-            where_clauses.append('COALESCE(s.is_read, 0) = 0')
+            where_clauses.append('COALESCE(s.has_read, 0) = 0')
 
         if saved_only:
             where_clauses.append('COALESCE(s.saved, 0) = 1')
@@ -54,8 +54,10 @@ class ArticleViewRepository:
                 a.image_url,
                 a.tags,
 
-                COALESCE(s.is_read, 0) AS is_read,
+                COALESCE(s.has_read, 0) AS has_read,
+                COALESCE(s.has_opened, 0) AS has_opened,
                 s.read_at,
+                s.opened_at,
                 s.vote,
                 COALESCE(s.saved, 0) AS saved,
                 COALESCE(s.archived, 0) AS archived,
@@ -68,7 +70,8 @@ class ArticleViewRepository:
             {where_sql}
 
             ORDER BY
-                COALESCE(s.is_read, 0) ASC,
+                COALESCE(s.has_read, 0) ASC,
+                COALESCE(s.has_opened, 0) ASC,
                 a.published_at DESC,
                 a.first_seen_at DESC
 
@@ -90,8 +93,10 @@ class ArticleViewRepository:
             content_type=row['content_type'],
             image_url=row['image_url'],
             tags=json.loads(row['tags']) if row['tags'] else [],
-            is_read=bool(row['is_read']),
+            has_read=bool(row['has_read']),
+            has_opened=bool(row['has_opened']),
             read_at=str_to_dt(row['read_at']),
+            opened_at=str_to_dt(row['opened_at']),
             vote=row['vote'],
             saved=bool(row['saved']),
             archived=bool(row['archived']),

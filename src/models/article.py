@@ -16,12 +16,3 @@ class Article(BaseModel):
     content_type: str | None = None
     image_url: HttpUrl | None = None
     tags: list[str] = Field(default_factory=list)
-
-
-
-
-
-
-
-
-

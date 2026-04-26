@@ -1,4 +1,5 @@
 import logging
+import random
 from datetime import datetime
 from pathlib import Path
 
@@ -46,3 +47,23 @@ def setup_logger(name: str = 'news_app') -> logging.Logger:
     logger.addHandler(console_handler)
 
     return logger
+
+
+def should_filter_article(article) -> bool:
+    '''Return True if the article should be filtered out.'''
+
+    p = 1
+
+    if article.has_opened:
+        p *= 0.75
+
+    if article.has_read:
+        p *= 0.05
+    
+    # p=0: Returns False --> Never filters
+    # p=1: Returns True --> Always filters
+    # As p decreases, the likelihood random is greater increases (increasing odds of returning True)
+    # True filters it out. 
+    # Thus, the likelihood of filtering increases
+    return random.random() >= p
+

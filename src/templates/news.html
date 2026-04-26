@@ -31,18 +31,19 @@
                 {% for article in articles %}
                     <article class="article"
                              data-source="{{ article.source }}"
-                             data-read="{{ article.is_read }}">
+                             data-read="{{ article.has_read }}">
 
                         <div class="article-header">
                             <h2>
                                 <a href="{{ article.url }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer">
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onclick="markRead('{{ article.url | e }}')">
                                     {{ article.title }}
                                 </a>
                             </h2>
 
-                            {% if article.is_read %}
+                            {% if article.has_read %}
                                 <span class="status-badge">Read</span>
                             {% else %}
                                 <span class="status-badge unread">Unread</span>
@@ -117,6 +118,14 @@
                         ? ''
                         : 'none';
             });
+        }
+
+        function markRead(articleUrl) {
+            const formData = new FormData();
+            formData.append('article_url', articleUrl);
+            formData.append('has_read', 'true');
+
+            navigator.sendBeacon('/read', formData);
         }
     </script>
 {% endblock %}
