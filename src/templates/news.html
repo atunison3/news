@@ -30,28 +30,29 @@
             <div id="articles">
                 {% for article in articles %}
                     <article class="article"
-                             data-source="{{ article.source }}"
-                             data-read="{{ article.has_read }}">
+                             data-source="{{ article.source }}">
 
                         <div class="article-header">
                             <h2>
                                 <a href="{{ article.url }}"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                onclick="markRead('{{ article.url | e }}')">
+                                onclick="return markOpened(event, {{ article.id }})">
                                     {{ article.title }}
                                 </a>
                             </h2>
+                        </div>
 
+                        <div class="article-actions">
                             {% if article.has_read %}
                                 <span class="status-badge">Read</span>
                             {% else %}
-                                <span class="status-badge unread">Unread</span>
+                                <button type="button" onclick="markRead('{{ article.id }}')">Mark read</button>
                             {% endif %}
                         </div>
 
                         <p class="article-meta">
-                            Source: {{ article.source }}
+                            {{ article.source }}
                             |
                             Date:
                             {% if article.published_at %}
@@ -65,38 +66,6 @@
                             <p>{{ article.summary }}</p>
                         {% endif %}
 
-                        <div class="article-actions">
-                            <form method="post" action="/vote" class="vote-form">
-                                <input type="hidden" name="article_url" value="{{ article.url }}">
-
-                                <button type="submit"
-                                        name="vote"
-                                        value="up"
-                                        class="vote-button {% if article.vote == 'up' %}selected{% endif %}">
-                                    👍
-                                </button>
-
-                                <button type="submit"
-                                        name="vote"
-                                        value="down"
-                                        class="vote-button {% if article.vote == 'down' %}selected{% endif %}">
-                                    👎
-                                </button>
-                            </form>
-
-                            <form method="post" action="/read" class="read-form">
-                                <input type="hidden" name="article_url" value="{{ article.url }}">
-                                <input type="hidden" name="is_read" value="{{ not article.is_read }}">
-
-                                <button type="submit" class="secondary-button">
-                                    {% if article.is_read %}
-                                        Mark unread
-                                    {% else %}
-                                        Mark read
-                                    {% endif %}
-                                </button>
-                            </form>
-                        </div>
                     </article>
                 {% endfor %}
             </div>
@@ -120,12 +89,28 @@
             });
         }
 
-        function markRead(articleUrl) {
-            const formData = new FormData();
-            formData.append('article_url', articleUrl);
-            formData.append('has_read', 'true');
+        function markOpened(event, articleId) {
+            event.preventDefault();
+            const url = event.currentTarget.href;
 
-            navigator.sendBeacon('/read', formData);
+            fetch(`/articles/${articleId}/open`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).finally(() => {
+                window.open(url, '_blank');
+            });
+
+            return false;
+        }
+
+        function markRead(articleId) {
+            fetch(`/articles/${articleId}/read`, {
+                method: 'POST'
+            }).finally(() => {
+                window.location.reload();
+            });
         }
     </script>
 {% endblock %}

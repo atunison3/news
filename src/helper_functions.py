@@ -1,7 +1,9 @@
 import logging
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
+
+CACHE_TTL = timedelta(hours=1)
 
 
 def str_to_dt(value: str | None) -> datetime | None:
@@ -14,6 +16,24 @@ def dt_to_str(value: datetime | None) -> str | None:
     if value is None:
         return None
     return value.isoformat()
+
+
+def should_scrape_source(conn, source_name: str) -> bool:
+    row = conn.execute(
+        '''
+        SELECT LastFetchedAt
+        FROM WebsiteScrapeCache
+        WHERE SourceName = ?
+        ''',
+        (source_name,),
+    ).fetchone()
+
+    if row is None:
+        return True
+
+    last_fetched_at = datetime.fromisoformat(row['LastFetchedAt'])
+
+    return datetime.now() - last_fetched_at >= CACHE_TTL
 
 
 def setup_logger(name: str = "news_app") -> logging.Logger:
